@@ -1,6 +1,5 @@
 import { Schema, model, connect } from 'mongoose';
 import validator from 'validator';
-import bcrypt from 'bcrypt';
 
 import {
   StudentModel,
@@ -72,10 +71,11 @@ const studentSchema = new Schema<TStudent, StudentModel>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: true,
-      maxlength: [20, 'Password cannot be more than 20 characters'],
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User ID is required'],
+      unique: true,
+      ref: 'User',
     },
     name: {
       type: userNameSchema,
@@ -91,7 +91,7 @@ const studentSchema = new Schema<TStudent, StudentModel>(
       },
       required: true,
     },
-    dateOfBirth: { type: String },
+    dateOfBirth: { type: Date },
     email: {
       type: String,
       required: true,
@@ -118,11 +118,6 @@ const studentSchema = new Schema<TStudent, StudentModel>(
       required: true,
     },
     profileImg: { type: String, required: false },
-    isActive: {
-      type: String,
-      enum: ['active', 'blocked'],
-      default: 'active',
-    },
     isDeleted: { type: Boolean, default: false },
   },
   {
@@ -131,33 +126,6 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     },
   },
 );
-
-// pre save middleware / hook, will work on create(), save() method
-studentSchema.pre('save', async function (next) {
-  // hashing password
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this;
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_rounds),
-  );
-  next();
-});
-
-// virtual
-studentSchema.virtual('fullname').get(function () {
-  if (typeof this.name.middleName == 'undefined') {
-    return `${this.name.firstName} ${this.name.lastName}`;
-  } else {
-    return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
-  }
-});
-
-// post save middleware / hook
-studentSchema.post('save', function (doc, next) {
-  doc.password = '';
-  next();
-});
 
 //pre find middleware
 studentSchema.pre('find', function (next) {
@@ -173,6 +141,15 @@ studentSchema.pre('findOne', function (next) {
 studentSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
   next();
+});
+
+// virtual
+studentSchema.virtual('fullname').get(function () {
+  if (typeof this.name.middleName == 'undefined') {
+    return `${this.name.firstName} ${this.name.lastName}`;
+  } else {
+    return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
+  }
 });
 
 // creating a custom static method
