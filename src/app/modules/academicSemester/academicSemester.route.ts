@@ -21,7 +21,7 @@ router.post(
 router.patch(
   '/:academicSemesterID',
   validateRequest(
-    AcademicSemesterValidation.createAcademicSemesterValidationSchema,
+    AcademicSemesterValidation.updateAcademicSemesterValidationSchema,
   ),
   academicSemesterControllers.updateAcademicSemester,
 );
