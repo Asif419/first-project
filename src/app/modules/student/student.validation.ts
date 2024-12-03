@@ -65,6 +65,7 @@ const createStudentValidationSchema = z.object({
       guardian: guardianValidationSchema,
       localGuardian: localGuardianValidationSchema,
       admissionSemester: z.string(),
+      academicDepartment: z.string(),
       profileImg: z
         .string()
         .url('Profile Image must be a valid URL')

@@ -97,9 +97,6 @@ const studentValidationSchema = Joi.object({
   profileImg: Joi.string().uri().optional().messages({
     'string.uri': 'Profile Image must be a valid URL',
   }),
-  isActive: Joi.string().valid('active', 'blocked').default('active').messages({
-    'any.only': '{#value} is not valid for isActive',
-  }),
 });
 
 export default studentValidationSchema;

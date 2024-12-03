@@ -1,4 +1,6 @@
+import httpStatus from 'http-status';
 import config from '../../config';
+import AppError from '../../errors/AppError';
 import { TAcademicSemester } from '../academicSemester/academicSemester.interface';
 import { AcademicSemester } from '../academicSemester/academicSemester.model';
 import { TStudent } from '../student/student.interface';
@@ -21,7 +23,7 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
   );
 
   if (admissionSemester == null) {
-    throw new Error('Something went wrong');
+    throw new AppError(httpStatus.NOT_FOUND, 'Something went wrong');
   }
 
   // set Id manually
