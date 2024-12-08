@@ -9,6 +9,8 @@ import {
   TUserName,
 } from './student.interface';
 import config from '../../config';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 
 const userNameSchema = new Schema<TUserName>({
   // sending error message
@@ -147,6 +149,28 @@ studentSchema.pre('findOne', function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
 });
+
+// studentSchema.pre('findOneAndUpdate', async function (next) {
+//   console.log(this.session);
+//   const query = this.getQuery();
+//   const session = this.session;
+//   const id = query.id;
+//   const isStudentExists = await Student.findOne({ id: id}).session;
+//   if (!isStudentExists) {
+//     // console.log('student not found throwing error');
+//     throw new AppError(httpStatus.NOT_FOUND, 'This student does not exist');
+//   }
+
+//   // const isStudentDeleted = await Student.findOne(
+//   //   { query },
+//   //   { isDeleted: true },
+//   // );
+//   // if (isStudentDeleted) {
+//   //   throw new AppError(httpStatus.BAD_REQUEST, 'Student already deleted');
+//   // }
+
+//   next();
+// });
 
 studentSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
