@@ -1,10 +1,10 @@
 import { ZodError, ZodIssue } from 'zod';
-import { TErrorSource } from '../interface/error';
+import { TErrorSources, TGenericErrorResponse } from '../interface/error';
 import config from '../config';
 
 // if error from zod then change error to my format
-const handleZodError = (err: ZodError) => {
-  const errorSources: TErrorSource = err.issues.map((issue: ZodIssue) => {
+const handleZodError = (err: ZodError): TGenericErrorResponse => {
+  const errorSources: TErrorSources = err.issues.map((issue: ZodIssue) => {
     return {
       path: issue?.path[issue.path.length - 1],
       message: issue.message,
@@ -15,7 +15,7 @@ const handleZodError = (err: ZodError) => {
 
   return {
     statusCode,
-    message: 'Zod validation error',
+    message: 'Validation error',
     errorSources,
     stack: config.NODE_ENV === 'development' ? err?.stack : null,
   };
