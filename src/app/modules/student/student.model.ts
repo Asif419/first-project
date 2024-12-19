@@ -179,10 +179,10 @@ studentSchema.pre('aggregate', function (next) {
 
 // virtual
 studentSchema.virtual('fullname').get(function () {
-  if (typeof this.name.middleName == 'undefined') {
-    return `${this.name.firstName} ${this.name.lastName}`;
+  if (typeof this?.name?.middleName == 'undefined') {
+    return `${this?.name?.firstName} ${this?.name?.lastName}`;
   } else {
-    return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
+    return `${this?.name?.firstName} ${this?.name?.middleName} ${this?.name?.lastName}`;
   }
 });
 

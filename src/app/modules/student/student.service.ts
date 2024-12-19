@@ -4,9 +4,37 @@ import { Student } from './student.model';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { User } from '../user/user.model';
+import { number } from 'zod';
+import QueryBuilder from '../../builder/Querybuilder';
+import { studentSearchableFields } from './student.constant';
 
-const getAllStudentsFromDB = async () => {
-  const result = await Student.find()
+const getAllStudentsFromDBwithoutUsingQueryBuilderClass = async (
+  query: Record<string, unknown>,
+) => {
+  let searchTerm = '';
+  // copying query as we don't want to mute query, we might use query in future in any other case,
+  // so we should not overwrite query;
+  const queryObj = { ...query };
+  const studentSearchableField = ['email', 'name.firstName', 'presentAddress'];
+
+  if (query?.searchTerm) {
+    searchTerm = query?.searchTerm as string;
+  }
+
+  // searching
+  const searchQuery = Student.find({
+    $or: studentSearchableField.map((field) => ({
+      [field]: { $regex: searchTerm, $options: 'i' },
+    })),
+  });
+
+  //filtering
+  const excludeFields = ['searchTerm', 'sort', 'limit', 'page', 'fields'];
+
+  excludeFields.forEach((el) => delete queryObj[el]);
+
+  const filterQuery = searchQuery
+    .find(queryObj)
     .populate('admissionSemester')
     .populate({
       path: 'academicDepartment',
@@ -14,6 +42,63 @@ const getAllStudentsFromDB = async () => {
         path: 'academicFaculty',
       },
     });
+
+  // sorting
+  let sort = '-createdAt';
+  if (query.sort) {
+    sort = query.sort as string;
+  }
+  const sortQuery = filterQuery.sort(sort);
+
+  // limiting and pagination
+  let page = 1;
+  let skip = 0;
+  let limit = 1;
+
+  if (query.limit) {
+    limit = Number(query.limit) as number;
+  }
+
+  if (query.page) {
+    page = Number(query.page) as number;
+    skip = (page - 1) * limit;
+  }
+
+  const paginateQuery = sortQuery.skip(skip);
+
+  const limitQuery = paginateQuery.limit(limit);
+
+  // field limiting
+  let fields = '-__v'; //by default not showing this value;
+  if (query.fields) {
+    fields = (query.fields as string).split(',').join(' ');
+  }
+
+  const fieldsQuery = await limitQuery.select(fields);
+
+  return fieldsQuery;
+};
+
+const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
+  const studentQuery = new QueryBuilder(
+    Student.find()
+      .populate('admissionSemester')
+      .populate({
+        path: 'academicDepartment',
+        populate: {
+          path: 'academicFaculty',
+        },
+      }),
+    query,
+  )
+    .search(studentSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await studentQuery.modelQuery;
+
   return result;
 };
 
