@@ -3,7 +3,7 @@ import { UserController } from './user.controller';
 import { AnyZodObject } from 'zod';
 import { studentValidations } from '../student/student.validation';
 import validateRequest from '../../middlewares/validateRequest';
-import { adminValidation } from '../admin/admin.validation';
+import { adminValidations } from '../admin/admin.validation';
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ router.post(
 
 router.post(
   '/create-admin',
-  validateRequest(adminValidation.createAdminValidationSchema),
+  validateRequest(adminValidations.createAdminValidationSchema),
   UserController.createAdmin,
 );
 

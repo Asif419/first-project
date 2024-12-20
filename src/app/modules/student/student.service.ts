@@ -5,8 +5,8 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { User } from '../user/user.model';
 import { number } from 'zod';
-import QueryBuilder from '../../builder/Querybuilder';
 import { studentSearchableFields } from './student.constant';
+import QueryBuilder from '../../builder/Querybuilder';
 
 const getAllStudentsFromDBwithoutUsingQueryBuilderClass = async (
   query: Record<string, unknown>,
