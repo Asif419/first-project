@@ -39,3 +39,32 @@ export const generateStudentId = async (payload: TAcademicSemester) => {
   incrementId = `${payload.year}${payload.code}${incrementId}`;
   return incrementId;
 };
+
+const findLastAdminID = async () => {
+  const lastAdmin = await User.findOne(
+    {
+      role: 'admin',
+    },
+    {
+      id: 1,
+      _id: 0,
+    },
+  )
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
+  return lastAdmin?.id ? lastAdmin.id : undefined;
+};
+
+export const generateAdminID = async () => {
+  let currentId: string = (0).toString();
+  const lastAdminID = await findLastAdminID();
+  if (lastAdminID) {
+    currentId = lastAdminID.split('-')[1];
+  }
+  let incrementedID = (Number(currentId) + 1).toString().padStart(4, '0');
+  incrementedID = `A-${incrementedID}`;
+
+  return incrementedID;
+};

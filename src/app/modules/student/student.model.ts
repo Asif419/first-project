@@ -188,8 +188,8 @@ studentSchema.virtual('fullname').get(function () {
 
 // creating a custom static method
 studentSchema.statics.isUserExists = async function (id: string) {
-  const exitingUser = await Student.findOne({ id });
-  return exitingUser;
+  const existingUser = await Student.findOne({ id });
+  return existingUser;
 };
 
 // creating a custom instance method
