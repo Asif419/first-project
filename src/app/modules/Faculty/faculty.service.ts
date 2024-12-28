@@ -1,11 +1,11 @@
 import httpStatus from 'http-status';
-import QueryBuilder from '../../builder/Querybuilder';
+import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../errors/AppError';
-import { facultySearchableFields } from './faculty.constant';
 import { TFaculty } from './faculty.interface';
-import { Faculty } from './faculty.model';
 import { User } from '../user/user.model';
 import mongoose from 'mongoose';
+import { Faculty } from './faculty.model';
+import { facultySearchableFields } from './faculty.constant';
 
 const getAllFacultyFromDB = async (query: Record<string, unknown>) => {
   const adminQuery = new QueryBuilder(Faculty.find(), query)
@@ -20,12 +20,12 @@ const getAllFacultyFromDB = async (query: Record<string, unknown>) => {
   return result;
 };
 
-const getSingleFacultyFromDB = async (id: string) => {
-  const result = await Faculty.findOne({ id });
+const getSingleFacultyFromDB = async (_id: string) => {
+  const result = await Faculty.findById({ _id });
   return result;
 };
 
-const updateFacultyIntoDB = async (id: string, payload: Partial<TFaculty>) => {
+const updateFacultyIntoDB = async (_id: string, payload: Partial<TFaculty>) => {
   const { name, ...remainingFacultyData } = payload;
 
   const modifiedUpdatedData: Record<string, unknown> = {
@@ -38,7 +38,7 @@ const updateFacultyIntoDB = async (id: string, payload: Partial<TFaculty>) => {
     }
   }
 
-  const result = await Faculty.findOneAndUpdate({ id }, modifiedUpdatedData, {
+  const result = await Faculty.findByIdAndUpdate({ _id }, modifiedUpdatedData, {
     new: true,
     runValidators: true,
   });
@@ -46,14 +46,14 @@ const updateFacultyIntoDB = async (id: string, payload: Partial<TFaculty>) => {
   return result;
 };
 
-const deleteFacultyFromDB = async (id: string) => {
+const deleteFacultyFromDB = async (_id: string) => {
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    const deletedFaculty = await Faculty.findOneAndUpdate(
-      { id },
+    const deletedFaculty = await Faculty.findByIdAndUpdate(
+      { _id },
       { isDeleted: true },
       {
         new: true,
@@ -65,8 +65,10 @@ const deleteFacultyFromDB = async (id: string) => {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to delete faculty');
     }
 
-    const deletedUser = await User.findOneAndUpdate(
-      { id },
+    const userID = deletedFaculty.user;
+
+    const deletedUser = await User.findByIdAndUpdate(
+      userID,
       { isDeleted: true },
       { new: true, session },
     );

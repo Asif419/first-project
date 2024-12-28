@@ -14,7 +14,7 @@ import {
 import mongoose from 'mongoose';
 import { TAdmin } from '../admin/admin.interface';
 import { Admin } from '../admin/admin.model';
-import { Faculty } from '../Faculty/faculty.model';
+import { Faculty } from '../faculty/faculty.model';
 
 const createStudentIntoDB = async (password: string, payload: TStudent) => {
   // create a user object

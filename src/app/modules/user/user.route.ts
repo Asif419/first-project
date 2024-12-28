@@ -4,7 +4,7 @@ import { AnyZodObject } from 'zod';
 import { studentValidations } from '../student/student.validation';
 import validateRequest from '../../middlewares/validateRequest';
 import { adminValidations } from '../admin/admin.validation';
-import { facultyValidations } from '../Faculty/faculty.validation';
+import { facultyValidations } from '../faculty/faculty.validation';
 
 const router = express.Router();
 

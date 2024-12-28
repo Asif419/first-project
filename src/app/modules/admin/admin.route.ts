@@ -6,12 +6,12 @@ import validateRequest from '../../middlewares/validateRequest';
 const router = express.Router();
 
 router.get('/', adminControllers.getAllAdmins);
-router.get('/:adminID', adminControllers.getSingleAdminByID);
+router.get('/:id', adminControllers.getSingleAdminByID);
 router.patch(
-  '/:adminID',
+  '/:id',
   validateRequest(adminValidations.updateAdminValidationSchema),
   adminControllers.updateAdmin,
 );
-router.delete('/:adminID', adminControllers.deleteAdmin);
+router.delete('/:id', adminControllers.deleteAdmin);
 
 export const AdminsRoutes = router;
