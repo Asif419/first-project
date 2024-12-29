@@ -18,5 +18,15 @@ router.patch(
   CourseControllers.updateCourse,
 );
 router.delete('/:id', CourseControllers.deleteCourse);
+router.put(
+  '/:id/assign-faculties',
+  validateRequest(CourseValidations.FacultiesWithCourseVAlidationSchema),
+  CourseControllers.assignFacultiesWithCourse,
+); //use put: if exist update it otherwise create new
+router.delete(
+  '/:id/remove-faculties',
+  validateRequest(CourseValidations.FacultiesWithCourseVAlidationSchema),
+  CourseControllers.removeFacultiesWithCourse,
+);
 
 export const CourseRoutes = router;
