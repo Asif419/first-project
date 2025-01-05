@@ -5,6 +5,8 @@ import { TSemesterRegistration } from './semesterRegistration.interface';
 import { SemesterRegistration } from './semesterRegistration.model';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { RegistrationStatus } from './semesterRegistration.constant';
+import mongoose from 'mongoose';
+import { OfferedCourse } from '../offeredCourse/offeredCourse.model';
 
 const createSemesterRegistrationIntoDB = async (
   payload: TSemesterRegistration,
@@ -131,9 +133,65 @@ const updateSemesterRegistrationIntoDB = async (
   return result;
 };
 
+const deleteSemesterRegistrationFromDB = async (id: string) => {
+  const isSemesterRegistrationExists = await SemesterRegistration.findById(id);
+  if (!isSemesterRegistrationExists) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Semester Registration is not found',
+    );
+  }
+
+  if (isSemesterRegistrationExists?.status !== 'UPCOMING') {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You can not delete this registered semester',
+    );
+  }
+  const session = await mongoose.startSession();
+
+  // delete associated offered course
+  try {
+    session.startTransaction();
+    const deleteOfferedCourse = await OfferedCourse.deleteMany(
+      {
+        semesterRegistration: id,
+      },
+      { session },
+    );
+    if (!deleteOfferedCourse) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to delete offered courses',
+      );
+    }
+
+    const deleteSemesterRegistration =
+      await SemesterRegistration.findByIdAndDelete(id, {
+        session,
+        new: true,
+      });
+    if (!deleteSemesterRegistration) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to delete Semester Registration',
+      );
+    }
+    await session.commitTransaction();
+    await session.endSession();
+
+    return null;
+  } catch (err) {
+    session.abortTransaction();
+    session.endSession();
+    throw new Error('Failed to delete');
+  }
+};
+
 export const SemesterRegistrationServices = {
   createSemesterRegistrationIntoDB,
   getAllSemesterRegistrationFromDB,
   getSingleSemesterRegistrationFromDB,
   updateSemesterRegistrationIntoDB,
+  deleteSemesterRegistrationFromDB,
 };
